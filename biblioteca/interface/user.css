@@ -1,0 +1,126 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* Corpo da página */
+body {
+  background-color: #f4f7f8;
+  color: #333;
+  padding: 20px;
+}
+
+/* Título principal */
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #2c3e50;
+}
+
+/* Container geral para os formulários e relatórios */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulários */
+form {
+  margin-bottom: 30px;
+  background: #ecf0f1;
+  padding: 15px 20px;
+  border-radius: 6px;
+  border: 1px solid #bdc3c7;
+}
+
+/* Cabeçalho dos formulários */
+form h2 {
+  margin-bottom: 15px;
+  color: #34495e;
+  font-size: 20px;
+}
+
+/* Inputs e selects */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 8px 0 15px 0;
+  border: 1.5px solid #95a5a6;
+  border-radius: 4px;
+  font-size: 15px;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border-color: #2980b9;
+  outline: none;
+}
+
+/* Botões */
+button {
+  background-color: #2980b9;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #1f618d;
+}
+
+/* Navegação de botões de relatório */
+#relatorioArea {
+  background-color: #fdfefe;
+  border: 1px solid #d5d8dc;
+  padding: 15px;
+  border-radius: 6px;
+  min-height: 120px;
+  font-size: 16px;
+  color: #2c3e50;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+/* Botões de relatório alinhados */
+.report-buttons {
+  margin-bottom: 20px;
+}
+
+.report-buttons button {
+  margin-right: 15px;
+}
+
+/* Layout dos selects para empréstimos */
+select {
+  max-width: 100%;
+}
+
+/* Pequenos ajustes para labels e agrupamentos */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #34495e;
+}
+
+/* Espaçamento extra entre campos */
+.form-group {
+  margin-bottom: 15px;
+}

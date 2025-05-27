@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Administração - Biblioteca</title>
+  <link rel="stylesheet" href="adm.css">
+</head>
+<body>
+
+  <h1>Painel do Administrador</h1>
+
+  <!-- Formulário para cadastrar livro -->
+  <section>
+    <h2>Cadastrar Livro</h2>
+    <form id="formLivro">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" required />
+      <label for="autor">Autor</label>
+      <input type="text" id="autor" required />
+      <label for="isbn">ISBN</label>
+      <input type="text" id="isbn" required />
+      <label for="ano">Ano de Publicação</label>
+      <input type="number" id="ano" min="1000" max="9999" required />
+      <label for="quantidade">Quantidade disponível</label>
+      <input type="number" id="quantidade" min="1" required />
+      <button type="submit">Cadastrar Livro</button>
+    </form>
+  </section>
+
+  <!-- Formulário para cadastrar usuário -->
+  <section>
+    <h2>Cadastrar Usuário</h2>
+    <form id="formUsuario">
+      <label for="nome">Nome</label>
+      <input type="text" id="nome" required />
+      <label for="matricula">Matrícula</label>
+      <input type="text" id="matricula" required />
+      <label for="curso">Curso</label>
+      <input type="text" id="curso" required />
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" required />
+      <label for="tipo">Tipo</label>
+      <select id="tipo" required>
+        <option value="usuario">Usuário Comum</option>
+        <option value="admin">Administrador</option>
+      </select>
+      <button type="submit">Cadastrar Usuário</button>
+    </form>
+  </section>
+
+  <!-- Formulário para registrar empréstimo -->
+  <section>
+    <h2>Registrar Empréstimo</h2>
+    <form id="formEmprestimo">
+      <label for="usuarioEmprestimo">Usuário</label>
+      <select id="usuarioEmprestimo" required></select>
+
+      <label for="livroEmprestimo">Livro</label>
+      <select id="livroEmprestimo" required></select>
+
+      <button type="submit">Registrar Empréstimo</button>
+    </form>
+  </section>
+
+  <!-- Formulário para registrar devolução -->
+  <section>
+    <h2>Registrar Devolução</h2>
+    <form id="formDevolucao">
+      <label for="emprestimoDevolucao">Empréstimos pendentes</label>
+      <select id="emprestimoDevolucao" required></select>
+      <button type="submit">Registrar Devolução</button>
+    </form>
+  </section>
+
+  <!-- Relatórios simples -->
+  <section>
+    <h2>Relatórios</h2>
+    <button id="btnLivrosDisponiveis">Livros Disponíveis</button>
+    <button id="btnLivrosEmprestados">Livros Emprestados</button>
+    <button id="btnUsuariosAtrasados">Usuários com Empréstimos Atrasados</button>
+    <div id="relatorioArea" class="relatorio"></div>
+  </section>
+<a href="login.html">
+  <button>Sair</button>
+</a>
+  <script>
+    // Utilitários simples para carregar e salvar dados no localStorage
+    function carregarDados(chave) {
+      const dados = localStorage.getItem(chave);
+      return dados ? JSON.parse(dados) : [];
+    }
+
+    function salvarDados(chave, dados) {
+      localStorage.setItem(chave, JSON.stringify(dados));
+    }
+
+    // Funções para gerar IDs sequenciais
+    function gerarId(chave) {
+      const dados = carregarDados(chave);
+      return dados.length ? dados[dados.length - 1].id + 1 : 1;
+    }
+
+    // Função para preencher selects de usuários e livros
+    function preencherSelects() {
+      const usuarios = carregarDados('usuarios');
+      const livros = carregarDados('livros').filter(l => l.quantidade > 0);
+      const selectUsuarios = document.getElementById('usuarioEmprestimo');
+      const selectLivros = document.getElementById('livroEmprestimo');
+
+      selectUsuarios.innerHTML = '';
+      usuarios.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = `${u.nome} (${u.matricula})`;
+        selectUsuarios.appendChild(opt);
+      });
+
+      selectLivros.innerHTML = '';
+      livros.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = `${l.titulo} - ${l.autor} (${l.quantidade} disponíveis)`;
+        selectLivros.appendChild(opt);
+      });
+    }
+
+    // Preencher select de empréstimos pendentes para devolução
+    function preencherEmprestimosPendentes() {
+      const emprestimos = carregarDados('emprestimos').filter(e => !e.dataDevolucao);
+      const usuarios = carregarDados('usuarios');
+      const livros = carregarDados('livros');
+      const select = document.getElementById('emprestimoDevolucao');
+
+      select.innerHTML = '';
+      emprestimos.forEach(e => {
+        const usuario = usuarios.find(u => u.id === e.usuarioId);
+        const livro = livros.find(l => l.id === e.id);
+        // Corrigido: livro deve ser buscado por livroId
+        const livroCorreto = livros.find(l => l.id === e.livroId);
+
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${livroCorreto.titulo} - ${usuario.nome} (Emprestado em: ${e.dataEmprestimo})`;
+        select.appendChild(opt);
+      });
+    }
+
+    // Cadastrar Livro
+    document.getElementById('formLivro').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const titulo = this.titulo.value.trim();
+      const autor = this.autor.value.trim();
+      const isbn = this.isbn.value.trim();
+      const ano = Number(this.ano.value);
+      const quantidade = Number(this.quantidade.value);
+
+      if (!titulo || !autor || !isbn || !ano || !quantidade) {
+        alert('Preencha todos os campos corretamente.');
+        return;
+      }
+
+      const livros = carregarDados('livros');
+
+      // Pode verificar ISBN único (opcional)
+      if (livros.some(l => l.isbn === isbn)) {
+        alert('ISBN já cadastrado.');
+        return;
+      }
+
+      const novoLivro = {
+        id: gerarId('livros'),
+        titulo,
+        autor,
+        isbn,
+        ano,
+        quantidade
+      };
+
+      livros.push(novoLivro);
+      salvarDados('livros', livros);
+      alert('Livro cadastrado com sucesso!');
+      this.reset();
+      preencherSelects();
+    });
+
+    // Cadastrar Usuário
+    document.getElementById('formUsuario').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nome = this.nome.value.trim();
+      const matricula = this.matricula.value.trim();
+      const curso = this.curso.value.trim();
+      const senha = this.senha.value.trim();
+      const tipo = this.tipo.value;
+
+      if (!nome || !matricula || !curso || !senha) {
+        alert('Preencha todos os campos corretamente.');
+        return;
+      }
+
+      const usuarios = carregarDados('usuarios');
+
+      if (usuarios.some(u => u.matricula === matricula)) {
+        alert('Matrícula já cadastrada.');
+        return;
+      }
+
+      const novoUsuario = {
+        id: gerarId('usuarios'),
+        nome,
+        matricula,
+        curso,
+        senha,
+        tipo
+      };
+
+      usuarios.push(novoUsuario);
+      salvarDados('usuarios', usuarios);
+      alert('Usuário cadastrado com sucesso!');
+      this.reset();
+      preencherSelects();
+      preencherEmprestimosPendentes();
+    });
+
+    // Registrar Empréstimo
+    document.getElementById('formEmprestimo').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const usuarioId = Number(this.usuarioEmprestimo.value);
+      const livroId = Number(this.livroEmprestimo.value);
+
+      const usuarios = carregarDados('usuarios');
+      const livros = carregarDados('livros');
+      const emprestimos = carregarDados('emprestimos');
+
+      // Checar se o usuário já tem 3 empréstimos ativos
+      const emprestimosAtivosUsuario = emprestimos.filter(emp => emp.usuarioId === usuarioId && !emp.dataDevolucao);
+      if (emprestimosAtivosUsuario.length >= 3) {
+        alert('Usuário já possui 3 livros emprestados.');
+        return;
+      }
+
+      // Checar se o livro tem quantidade disponível
+      const livro = livros.find(l => l.id === livroId);
+      if (!livro || livro.quantidade <= 0) {
+        alert('Livro não disponível.');
+        return;
+      }
+
+      // Registrar empréstimo
+      const hoje = new Date();
+      const dataEmprestimo = hoje.toISOString().split('T')[0];
+      const dataPrevistaDevolucao = new Date(hoje);
+      dataPrevistaDevolucao.setDate(hoje.getDate() + 7);
+      const dataPrevistaStr = dataPrevistaDevolucao.toISOString().split('T')[0];
+
+      const novoEmprestimo = {
+        id: gerarId('emprestimos'),
+        usuarioId,
+        livroId,
+        dataEmprestimo,
+        dataPrevistaDevolucao: dataPrevistaStr,
+        dataDevolucao: null,
+        atrasado: false
+      };
+
+      emprestimos.push(novoEmprestimo);
+      salvarDados('emprestimos', emprestimos);
+
+      // Atualizar quantidade do livro
+      livro.quantidade -= 1;
+      salvarDados('livros', livros);
+
+      alert('Empréstimo registrado com sucesso!');
+      this.reset();
+      preencherSelects();
+      preencherEmprestimosPendentes();
+    });
+
+    // Registrar Devolução
+    document.getElementById('formDevolucao').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const emprestimoId = Number(this.emprestimoDevolucao.value);
+      const emprestimos = carregarDados('emprestimos');
+      const livros = carregarDados('livros');
+
+      const emprestimo = emprestimos.find(e => e.id === emprestimoId);
+      if (!emprestimo || emprestimo.dataDevolucao) {
+        alert('Empréstimo inválido ou já devolvido.');
+        return;
+      }
+
+      const hoje = new Date();
+      const dataDevolucao = hoje.toISOString().split('T')[0];
+
+      emprestimo.dataDevolucao = dataDevolucao;
+      emprestimo.atrasado = (hoje > new Date(emprestimo.dataPrevistaDevolucao));
+
+      salvarDados('emprestimos', emprestimos);
+
+      // Atualizar quantidade do livro
+      const livro = livros.find(l => l.id === emprestimo.livroId);
+      livro.quantidade += 1;
+      salvarDados('livros', livros);
+
+      alert(`Devolução registrada! ${emprestimo.atrasado ? 'Devolução atrasada!' : ''}`);
+      this.reset();
+      preencherSelects();
+      preencherEmprestimosPendentes();
+    });
+
+    // Relatórios
+    const relatorioArea = document.getElementById('relatorioArea');
+
+    document.getElementById('btnLivrosDisponiveis').addEventListener('click', () => {
+      const livros = carregarDados('livros').filter(l => l.quantidade > 0);
+      if (livros.length === 0) {
+        relatorioArea.textContent = 'Nenhum livro disponível.';
+        return;
+      }
+      relatorioArea.innerHTML = '<b>Livros disponíveis:</b><br>';
+      livros.forEach(l => {
+        relatorioArea.innerHTML += `• ${l.titulo} (${l.quantidade} disponíveis)<br>`;
+      });
+    });
+
+    document.getElementById('btnLivrosEmprestados').addEventListener('click', () => {
+      const emprestimos = carregarDados('emprestimos').filter(e => !e.dataDevolucao);
+      const livros = carregarDados('livros');
+      const usuarios = carregarDados('usuarios');
+
+      if (emprestimos.length === 0) {
+        relatorioArea.textContent = 'Nenhum livro emprestado no momento.';
+        return;
+      }
+      relatorioArea.innerHTML = '<b>Livros emprestados:</b><br>';
+      emprestimos.forEach(e => {
+        const livro = livros.find(l => l.id === e.livroId);
+        const usuario = usuarios.find(u => u.id === e.usuarioId);
+        relatorioArea.innerHTML += `• ${livro.titulo} emprestado para ${usuario.nome} até ${e.dataPrevistaDevolucao}<br>`;
+      });
+    });
+
+    document.getElementById('btnUsuariosAtrasados').addEventListener('click', () => {
+      const emprestimos = carregarDados('emprestimos').filter(e => e.atrasado && !e.dataDevolucao);
+      const usuarios = carregarDados('usuarios');
+
+      if (emprestimos.length === 0) {
+        relatorioArea.textContent = 'Nenhum usuário com empréstimos atrasados.';
+        return;
+      }
+
+      // Listar usuários únicos com atraso
+      const idsUsuariosAtrasados = [...new Set(emprestimos.map(e => e.usuarioId))];
+
+      relatorioArea.innerHTML = '<b>Usuários com empréstimos atrasados:</b><br>';
+      idsUsuariosAtrasados.forEach(id => {
+        const usuario = usuarios.find(u => u.id === id);
+        relatorioArea.innerHTML += `• ${usuario.nome} (Matrícula: ${usuario.matricula})<br>`;
+      });
+    });
+
+    // Inicializar selects ao carregar a página
+    window.onload = () => {
+      preencherSelects();
+      preencherEmprestimosPendentes();
+    };
+  </script>
+
+</body>
+</html>
