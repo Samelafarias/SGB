@@ -2,13 +2,13 @@
 
 import { autenticarUsuario } from './servicos/bibliotecaService.js'; // Importa a função de autenticação
 
-document.getElementById("loginForm").addEventListener("submit", async function(e) { // Adicionado 'async' aqui
+document.getElementById("loginForm").addEventListener("submit", async function(e) { 
   e.preventDefault();
   const matricula = document.getElementById("matricula").value;
   const senha = document.getElementById("senha").value;
 
     try {
-        const usuario = await autenticarUsuario(matricula, senha); // Chama a nova função
+        const usuario = await autenticarUsuario(matricula, senha);
 
         if (usuario) {
             localStorage.setItem("usuarioLogado", JSON.stringify(usuario));

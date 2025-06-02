@@ -1,25 +1,22 @@
 // servicos/databaseService.js ou dados/dbService.js
-
 import initSqlJs from 'sql.js';
 
-let db = null; // A instância do banco de dados SQLite
+let db = null; 
 
-// Função para inicializar o banco de dados
+
 export async function initializeDatabase() {
     if (db) {
         console.log("Banco de dados já inicializado.");
-        return db; // Retorna a instância existente se já estiver inicializada
+        return db; 
     }
 
     try {
         const SQL = await initSqlJs({
 
-            locateFile: file => `../node_modules/sql.js/dist/${file}` // Ajuste este caminho se necessário!
+            locateFile: file => `../node_modules/sql.js/dist/${file}` 
         });
 
-        // Tenta carregar o banco de dados do IndexedDB (abordagem mais robusta)
-        // Ou do localStorage (mais simples para começar, mas com limitações)
-        const storedDbData = localStorage.getItem('library_db'); // Usando localStorage para simplificar agora
+        const storedDbData = localStorage.getItem('library_db'); 
         if (storedDbData) {
             console.log("Carregando banco de dados do localStorage...");
             const buffer = JSON.parse(storedDbData);
@@ -27,7 +24,7 @@ export async function initializeDatabase() {
         } else {
             console.log("Criando novo banco de dados...");
             db = new SQL.Database();
-            createTables(); // Cria as tabelas se o banco for novo
+            createTables(); 
         }
 
         console.log("Banco de dados SQLite inicializado com sucesso!");
@@ -35,11 +32,10 @@ export async function initializeDatabase() {
 
     } catch (err) {
         console.error("Erro ao inicializar o banco de dados SQLite:", err);
-        throw err; // Rejeita a Promise para que o erro seja tratado externamente
+        throw err;
     }
 }
 
-// Função para criar as tabelas no banco de dados
 function createTables() {
     try {
         db.run(`
@@ -80,13 +76,11 @@ function createTables() {
     }
 }
 
-// Função para salvar o estado atual do banco de dados no localStorage
 export function saveDatabase() {
     if (db) {
         try {
-            const data = db.export(); // Exporta o banco de dados como Uint8Array
+            const data = db.export(); 
             const buffer = new Uint8Array(data);
-            // Salva como string JSON. Para grandes volumes, use IndexedDB!
             localStorage.setItem('library_db', JSON.stringify(Array.from(buffer)));
             console.log("Banco de dados salvo no localStorage.");
         } catch (err) {
@@ -95,11 +89,11 @@ export function saveDatabase() {
     }
 }
 
-// --- Funções CRUD para Livros ---
+
 export async function insertLivro(livro) {
-    await initializeDatabase(); // Garante que o DB está inicializado
+    await initializeDatabase(); 
     db.run("INSERT INTO livros (titulo, autor, isbn, anoPublicacao, quantidadeDisponivel) VALUES (?, ?, ?, ?, ?)",
-        [livro.titulo, livro.autor, livro.isbn, livro.anoPublicacao, livro.quantidade]); // 'quantidade' no seu código, 'quantidadeDisponivel' na tabela
+        [livro.titulo, livro.autor, livro.isbn, livro.anoPublicacao, livro.quantidade]); 
     saveDatabase();
 }
 
@@ -112,7 +106,6 @@ export async function getLivros(filter = {}) {
     }
     const res = db.exec(query, params);
     if (res.length === 0) return [];
-    // Mapeia o resultado para um formato de objeto mais amigável
     return res[0].values.map(row => {
         const obj = {};
         res[0].columns.forEach((col, idx) => {
@@ -141,12 +134,12 @@ export async function getLivroById(livroId) {
 }
 
 
-// --- Funções CRUD para Usuários ---
+
 export async function insertUsuario(usuario) {
     await initializeDatabase();
-    // Inserir com senha e tipo também
+
     db.run("INSERT INTO usuarios (nome, matricula, senha, tipo) VALUES (?, ?, ?, ?)",
-        [usuario.nome, usuario.matricula, usuario.senha, usuario.tipo || 'comum']); // Assume 'comum' se não especificado
+        [usuario.nome, usuario.matricula, usuario.senha, usuario.tipo || 'comum']); 
     saveDatabase();
 }
 
@@ -174,7 +167,6 @@ export async function getUsuarioById(usuarioId) {
     return obj;
 }
 
-// --- Funções CRUD para Empréstimos ---
 export async function insertEmprestimo(emprestimo) {
     await initializeDatabase();
     db.run("INSERT INTO emprestimos (usuarioId, livroId, dataEmprestimo, dataPrevistaDevolucao, atrasado) VALUES (?, ?, ?, ?, ?)",
@@ -221,5 +213,4 @@ export async function getEmprestimoById(emprestimoId) {
     return obj;
 }
 
-// Exporta a instância do DB para debug se necessário
 export { db };
