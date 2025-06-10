@@ -1,0 +1,24 @@
+{
+  "name": "sgb",
+  "version": "1.0.0",
+  "description": "Um sistema simples, funcional e monolítico para controle de empréstimos e devoluções em bibliotecas de pequeno porte. Desenvolvido em **JavaScript**, com interface HTML e armazenamento local via arquivos JSON, o SGB é ideal para ambientes offline e de baixo custo, como bibliotecas comunitárias ou escolares.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Samelafarias/SGB.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Samelafarias/SGB/issues"
+  },
+  "homepage": "https://github.com/Samelafarias/SGB#readme",
+  "dependencies": {
+    "mysql2": "^3.14.1",
+    "nodejs": "^0.0.0"
+  }
+}

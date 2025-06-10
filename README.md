@@ -1,7 +1,7 @@
 
 # 📚 SGB - Sistema de Gestão de Biblioteca
 
-Um sistema simples, funcional e monolítico para controle de empréstimos e devoluções em bibliotecas de pequeno porte. Desenvolvido em **JavaScript**, com interface HTML e armazenamento local via arquivos JSON, o SGB é ideal para ambientes offline e de baixo custo, como bibliotecas comunitárias ou escolares.
+Um sistema simples, funcional e monolítico para controle de empréstimos e devoluções em bibliotecas de pequeno porte. Desenvolvido em JavaScript (Node.js) e utilizando MySQL/MariaDB para armazenamento de dados, o SGB é ideal para ambientes offline (com banco de dados local) e de baixo custo, como bibliotecas comunitárias ou escolares.
 
 ---
 
@@ -55,72 +55,74 @@ O **Sistema de Gestão de Biblioteca (SGB)** foi criado para atender à demanda 
 
 ## ⚙️ Tecnologias Utilizadas
 
-- **JavaScript** (ES6+)
-- **HTML5**
-- **CSS3**
-- **Armazenamento local** via arquivos `.json` e `localStorage` JS
-- Sem dependências externas no front-end
+- **JavaScript** (Node - ES6+)
+- **MySQL/MariaDB**(Como banco de dados)
+--`mysql2`(drive Node.js para MySQL/MariaDB)
+- **Interface via terminal** (usando readline)
 
 ---
 
 ## 📂 Estrutura de Pastas
 
 ```
-/biblioteca
+/SGB
 │
-├── dados/                  # Persistência de dados em JSON
-│   ├── emprestimos.json
-│   ├── livros.json
-│   ├── usuarios.json
-│   └── localStorage.js     # Gerencia leitura e escrita em JSON
+├── config/                 # Configurações do banco de dados
+│   └── db.js               # Conexão e criação de tabelas MySQL/MariaDB
 │
-├── interface/              # Interface do usuário (HTML + CSS + JS)
-│   ├── login.html
-│   ├── admin.html
-│   ├── usuario.html
-│   ├── login.css
-│   ├── adm.css
-│   ├── user.css
-│   ├── style.css
-│   └── menu.js             # Controla a navegação e interação do sistema
-│
-├── modelos/                # Modelos de dados
-│   ├── Livros.js
+├── models/                 # Modelos de dados e interação direta com o DB
+│   ├── Livro.js
 │   ├── Usuario.js
 │   └── Emprestimo.js
 │
-├── servicos/              # Lógica de negócios
-│   └── bibliotecaService.js
+├── services/               # Lógica de negócios e regras do sistema
+│   ├── livroService.js
+│   ├── usuarioService.js
+│   ├── emprestimoService.js
+│   └── relatorioService.js
 │
-├── main.js                # Script principal de inicialização
-├── package.json
-├── package-lock.json
-└── .gitattributes
+├── utils/                  # Funções utilitárias (ex: manipulação de datas)
+│   └── dateUtils.js
+│
+├── views/                  # Funções para exibir o menu e interagir com o usuário no terminal
+│   └── menu.js
+│
+├── app.js                  # Arquivo principal para iniciar o sistema
+├── package.json            # Gerenciamento de dependências do Node.js
+└── package-lock.json
 ```
 
 ---
 
 ## 🚀 Como Executar
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/seuusuario/sgb.git
-   ```
+Para colocar o SGB em funcionamento, siga os passos abaixo:
 
-2. Acesse a pasta do projeto:
-   ```bash
-   cd sgb/biblioteca
-   ```
+1. Instale o Node.js: Certifique-se de ter o Node.js (versão 16.x ou superior) instalado em sua máquina.
 
-3. Abra o arquivo `login.html` com um navegador moderno.
+2. Instale e Inicie o MySQL/MariaDB (via XAMPP)
+ - Baixe e instale o XAMPP 
+ - Após a instalação, inicie os módulos Apache e MySQL/MariaDB através do painel de controle do XAMPP.
+ - Crie o Banco de Dados: Conecte-se ao seu MySQL/MariaDB (pelo PHPMyAdmin do XAMPP, MySQL Workbench, ou extensão Database Client do VS Code) e execute o seguinte comando SQL:
+ `CREATE DATABASE IF NOT EXISTS biblioteca_db;
+ USE biblioteca_db;
+ `
 
-> ✅ **Observação:** O sistema roda **offline** e não precisa de servidor ou instalação.
+3. Acesse a Pasta do Projeto:
+
+ - Abra o terminal na pasta raiz do projeto SGB.
+
+4. Execute o Sistema:
+ - Basta rodar um único comando para instalar as dependências e iniciar o sistema:
+ `
+ npm start ou node app.js
+ `
 
 ---
 
 ## 📊 Relatórios
 
-A partir da tela administrativa (`admin.html`), o usuário pode:
+Através da opção de relatórios no menu principal, o usuário pode:
 
 - Listar todos os livros disponíveis.
 - Ver usuários com devoluções atrasadas.
@@ -130,11 +132,13 @@ A partir da tela administrativa (`admin.html`), o usuário pode:
 
 ## 🧠 Justificativa Arquitetural
 
-Este projeto utiliza uma **arquitetura monolítica**, na qual todas as funcionalidades estão centralizadas em uma única base de código. Isso reduz complexidade e facilita a manutenção em contextos com pouca infraestrutura de TI.
+Este projeto adota uma arquitetura monolítica, onde todas as funcionalidades – a camada de interface (terminal), a lógica de negócios e a persistência de dados (MySQL/MariaDB) – estão contidas e executadas como uma única aplicação.
 
-- Sem backend separado.
-- Interface e lógica de negócio integradas.
-- Persistência local via JSON ou `localStorage`.
+A escolha por essa arquitetura foi motivada pela necessidade de um sistema:
+
+- Simples e Direto: Fácil de desenvolver, testar e implantar para um contexto de baixo custo e sem equipe de TI dedicada.
+- Monolítico: Atende ao requisito de um programa autocontido, sem a complexidade de múltiplos serviços ou microsserviços.
+- Manutenção Simplificada: A base de código unificada facilita a compreensão e a alteração do sistema como um todo.
 
 ---
 
